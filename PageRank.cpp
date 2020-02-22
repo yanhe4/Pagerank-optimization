@@ -60,7 +60,9 @@ std::vector<Edge> ReadInputFromTextFile(const char* input_file, unsigned& num_ve
         }
         myfile.close();
     }
-    return input;
+    // Try to optimize with sort 
+    // std::sort(input.begin(), input.end(), [](const Edge& a, const Edge& b) -> bool { return a.dest < b.dest;});
+    // return input;
 }
 
 bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::vector<double> pre_pagerank)
@@ -92,12 +94,16 @@ bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::ve
 
 void PageRank(Graph *graph)
 {
-    const unsigned num_v = graph->VertexesNum();
-    double init_rank = double(1.0 / num_v);
-    std::vector<double> pagerank(num_v);
-    std::vector<double> pre_pagerank(num_v);
+    unsigned num_v = graph->VertexesNum();
+    double init_rank = 1.0 / num_v;
     double pr_random = (1.0 - damping_factor) / num_v;
-    
+
+    // Declare two vectors store current pr and previous pr perspectively.
+    std::vector< double > pagerank;
+    pagerank.reserve( num_v + 1u );
+    std::vector< double > pre_pagerank;
+    pre_pagerank.reserve( num_v + 1u );
+
     for (unsigned i = 0; i < num_v; i++)
     {
         pagerank[i] = init_rank;
@@ -156,18 +162,16 @@ int main(int argc, char *argv[])
 
         std::vector<Edge> input = ReadInputFromTextFile(argv[1], num_vertices);
         
-        auto start = std::chrono::system_clock::now();
+        auto const start_time = std::chrono::steady_clock::now();
 
         Graph graph(num_vertices, input);
 
         PageRank(&graph);
 
-        auto end = std::chrono::system_clock::now();
+        auto const end_time = std::chrono::steady_clock::now();
 
-        std::chrono::duration<double> elapsed_seconds = end - start;
-        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-        std::cout << "Finished computation at " << std::ctime(&end_time)
-              << "Totle time used: " << elapsed_seconds.count() << "s\n";
+        auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count();
+        std::cout << "Total running time  = " << avg_time << " us" << std::endl;
     }
     else
     {
