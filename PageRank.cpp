@@ -92,16 +92,12 @@ bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::ve
 
 void PageRank(Graph *graph)
 {
-    unsigned num_v = graph->VertexesNum();
-    double init_rank = 1.0 / num_v;
+    const unsigned num_v = graph->VertexesNum();
+    double init_rank = double(1.0 / num_v);
+    std::vector<double> pagerank(num_v);
+    std::vector<double> pre_pagerank(num_v);
     double pr_random = (1.0 - damping_factor) / num_v;
-
-    // Declare two vectors store current pr and previous pr perspectively.
-    std::vector< double > pagerank;
-    pagerank.reserve( num_v + 1u );
-    std::vector< double > pre_pagerank;
-    pre_pagerank.reserve( num_v + 1u );
-
+    
     for (unsigned i = 0; i < num_v; i++)
     {
         pagerank[i] = init_rank;
