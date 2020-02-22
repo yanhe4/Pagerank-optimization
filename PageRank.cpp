@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>   
 #include "Graph.hpp"
 
 extern const double damping_factor = 0.85; // Adjusts the derived value downward.
@@ -73,9 +74,13 @@ int main(int argc, char *argv[])
     // writing out the edges in the graph
     std::vector<Edge> input { Edge{A,B}, Edge{A,C}, Edge{B,D}, Edge{C,A}, Edge{C,B}, Edge{C,D}, Edge{D,C}};
 
+    auto const start_time = std::chrono::steady_clock::now();
 	Graph graph(num_vertex, input);
 
 	PageRank(&graph);
+    auto const end_time = std::chrono::steady_clock::now();
+    auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count();
 
+    std::cout << "Total running time  = " << avg_time << " us" << std::endl;
     return 0;
 }
