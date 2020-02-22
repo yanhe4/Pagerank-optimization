@@ -42,7 +42,8 @@ int main (int argc, char *argv[])
 															
 	  	 	for(unsigned i = 0; i < output.size(); i++)
 	  	 	{
-	  	 		myfile << output[i]%num_vertexes << ' ';
+	  	 		// output the size of random generation data between [0, num_vertexes)
+	  	 		myfile << output[i] % num_vertexes << ' ';
 	  	 	}
 	  	  	myfile.close();
 		}
@@ -52,6 +53,7 @@ int main (int argc, char *argv[])
   		std::cout << "Invalid Input: " << std::endl;
   		std::cout << "Please input the number of vertexed wanted in argc[1]" << std::endl;
   		std::cout << "Please input the size of graph links wanted in argc[2]" << std::endl;
+  		std::cout << "Please input the output text file name wanted in argc[3]" << std::endl;
   	}
   
   	return 0;
