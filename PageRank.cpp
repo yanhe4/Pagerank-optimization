@@ -92,11 +92,15 @@ bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::ve
 
 void PageRank(Graph *graph)
 {
-    const unsigned num_v = graph->VertexesNum();
-    double init_rank = double(1.0 / num_v);
-    std::vector<double> pagerank(num_v);
-    std::vector<double> pre_pagerank(num_v);
+    unsigned num_v = graph->VertexesNum();
+    double init_rank = 1.0 / num_v;
     double pr_random = (1.0 - damping_factor) / num_v;
+
+    // Declare two vectors store current pr and previous pr perspectively.
+    std::vector< double > pagerank;
+    pagerank.reserve( num_v + 1u );
+    std::vector< double > pre_pagerank;
+    pre_pagerank.reserve( num_v + 1u );
 
     for (unsigned i = 0; i < num_v; i++)
     {
@@ -112,25 +116,29 @@ void PageRank(Graph *graph)
         {
             pre_pagerank[i] = pagerank[i];
             pagerank[i] = 0.0;
-            std::cout << i+1  << " = "<< pre_pagerank[i] << std::endl;
+            std::cout << i+1 << " = "<< pre_pagerank[i] << std::endl;
         }
 
         // Distribute the pr_sum of all dangling nodes(no outer edges) to all nodes.
         double dangling_pr_sum = 0.0;
         for (unsigned i = 0; i < num_v; i++)
+        {
             if (graph->OutgoingEdgeCount(i) == 0)
+            {
                 dangling_pr_sum += pre_pagerank[i];
+            }
+        }
         double pr_dangling = damping_factor * dangling_pr_sum / num_v;
 
         // Iterater all the vertexes and calculate its adjacency function l(pi,pj) of all inward links
         // Update its pagerank value by adding pr_eigenvector from its inward links separately
         for (unsigned i = 0; i < num_v; i++)
         {
-        	signed inward_edges_num = graph->InwardEdgeCount(i);
+            unsigned inward_edges_num = graph->InwardEdgeCount(i);
             // std::cout << inward_edges_num << std::endl;
             for (unsigned edge_num = 0; edge_num < inward_edges_num; edge_num++)
             {
-            	unsigned inward_edge_index = graph->adjEdges[i].at(edge_num);
+                unsigned inward_edge_index = graph->adjEdges[i].at(edge_num);
                 // std::cout << inward_edge_index << std::endl;
                 double pr_eigenvector = damping_factor * pre_pagerank[inward_edge_index] / graph->OutgoingEdgeCount(inward_edge_index);
                 pagerank[i] += pr_eigenvector;
