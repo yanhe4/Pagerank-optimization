@@ -13,7 +13,7 @@ extern const unsigned max_iterations = 100;
 extern const double tolerance = 1e-8;
 
 // Read Input from file with format:
-// N
+// N (#vertex)
 // src_index dest_index ... src_index dest_index (pairs of source and destination links)
 std::vector<Edge> ReadInputFromTextFile(const char* input_file, unsigned& num_vertices)
 {
@@ -60,9 +60,7 @@ std::vector<Edge> ReadInputFromTextFile(const char* input_file, unsigned& num_ve
         }
         myfile.close();
     }
-    // Try to optimize with sort 
-    // std::sort(input.begin(), input.end(), [](const Edge& a, const Edge& b) -> bool { return a.dest < b.dest;});
-    // return input;
+    return input;
 }
 
 bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::vector<double> pre_pagerank)
@@ -94,16 +92,12 @@ bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::ve
 
 void PageRank(Graph *graph)
 {
-    unsigned num_v = graph->VertexesNum();
-    double init_rank = 1.0 / num_v;
+    const unsigned num_v = graph->VertexesNum();
+    double init_rank = double(1.0 / num_v);
+    std::vector<double> pagerank(num_v);
+    std::vector<double> pre_pagerank(num_v);
     double pr_random = (1.0 - damping_factor) / num_v;
-
-    // Declare two vectors store current pr and previous pr perspectively.
-    std::vector< double > pagerank;
-    pagerank.reserve( num_v + 1u );
-    std::vector< double > pre_pagerank;
-    pre_pagerank.reserve( num_v + 1u );
-
+    
     for (unsigned i = 0; i < num_v; i++)
     {
         pagerank[i] = init_rank;
@@ -113,7 +107,7 @@ void PageRank(Graph *graph)
     unsigned iter = 0;
     while (iter++ < max_iterations)
     {
-    	// Update the pagerank values in every iteration
+        // Update the pagerank values in every iteration
         for (unsigned i = 0; i < num_v; i++)
         {
             pre_pagerank[i] = pagerank[i];
@@ -170,8 +164,8 @@ int main(int argc, char *argv[])
 
         auto const end_time = std::chrono::steady_clock::now();
 
-        auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count();
-        std::cout << "Total running time  = " << avg_time << " us" << std::endl;
+        auto const total_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count();
+        std::cout << "Total running time  = " << total_time << " us" << std::endl;
     }
     else
     {
