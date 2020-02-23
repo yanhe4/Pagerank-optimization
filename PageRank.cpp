@@ -206,9 +206,6 @@ int main(int argc, char *argv[])
         {
             std::cout << "Invalid Input!" << std::endl;
         }
-
-        // auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count() / static_cast< duration >(loop_times);
-        // std::cout << "Average total running time  = " << avg_time << " us" << std::endl;
     }
     else
     {
