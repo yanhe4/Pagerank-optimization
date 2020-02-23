@@ -2,6 +2,7 @@
 #include <fstream> // std::ifstream
 #include <sstream> // std::stringstream
 #include <string> // std::string
+#include <cstring> // std::strcmp
 #include <cmath>
 #include <vector>
 #include <chrono> 
@@ -112,7 +113,7 @@ void PageRank(Graph *graph)
         {
             pre_pagerank[i] = pagerank[i];
             pagerank[i] = 0.0;
-            std::cout << i+1 << " = "<< pre_pagerank[i] << std::endl;
+            // std::cout << i+1 << " = "<< pre_pagerank[i] << std::endl;
         }
 
         // Distribute the pr_sum of all dangling nodes(no outer edges) to all nodes.
@@ -148,29 +149,72 @@ void PageRank(Graph *graph)
     }
 }
 
+void PrintBenchmark(std::chrono::time_point<std::chrono::steady_clock> start_t, std::chrono::time_point<std::chrono::steady_clock> const end_t, const unsigned loop_t)
+{
+    auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_t - start_t ).count() / double(loop_t);
+    std::cout << "Average total running time  = " << avg_time << " us" << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
-    if(argc == 2)
+    if(argc == 3)
     {
+        unsigned loop_times = 10;
         unsigned num_vertices = 0;
+        const char* test_mode = argv[2];
 
         std::vector<Edge> input = ReadInputFromTextFile(argv[1], num_vertices);
-        
-        auto const start_time = std::chrono::steady_clock::now();
 
-        Graph graph(num_vertices, input);
+        if(std::strcmp(test_mode, "total") == 0)
+        {
+            auto const start_time = std::chrono::steady_clock::now();
 
-        PageRank(&graph);
+            for (int i = 0; i < loop_times; i++)
+            {
+                Graph graph(num_vertices, input);
 
-        auto const end_time = std::chrono::steady_clock::now();
+                PageRank(&graph);
+            }  
+            auto const end_time = std::chrono::steady_clock::now(); 
+            PrintBenchmark(start_time, end_time, loop_times);
+        }
+        else if(std::strcmp(test_mode, "graph") == 0 )
+        {
+            auto const start_time = std::chrono::steady_clock::now();
 
-        auto const total_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count();
-        std::cout << "Total running time  = " << total_time << " us" << std::endl;
+            Graph graph(num_vertices, input);
+            for (unsigned i = 0; i < loop_times-1; i++)
+            {
+                Graph graph(num_vertices, input);
+            }
+            auto const end_time = std::chrono::steady_clock::now(); 
+            PageRank(&graph);  
+            PrintBenchmark(start_time, end_time, loop_times);          
+        }
+        else if(std::strcmp(test_mode, "pagerank") == 0)
+        {
+            Graph graph(num_vertices, input);
+            auto const start_time = std::chrono::steady_clock::now();
+            for (unsigned i = 0; i < loop_times; i++)
+            {
+                PageRank(&graph);
+            }
+            auto const end_time = std::chrono::steady_clock::now(); 
+            PrintBenchmark(start_time, end_time, loop_times);
+        }
+        else
+        {
+            std::cout << "Invalid Input!" << std::endl;
+        }
+
+        // auto const avg_time = std::chrono::duration_cast<std::chrono::microseconds>( end_time - start_time ).count() / static_cast< duration >(loop_times);
+        // std::cout << "Average total running time  = " << avg_time << " us" << std::endl;
     }
     else
     {
         std::cout << "Invalid Input: " << std::endl;
         std::cout << "Please input the input text file name wanted in argc[1]" << std::endl;
+        std::cout << "Please input the time mode(total/graph/pangerank) to be record in argc[2]" << std::endl;
     }
 
     return 0;
