@@ -181,15 +181,11 @@ int main(int argc, char *argv[])
         else if(std::strcmp(test_mode, "graph") == 0 )
         {
             auto const start_time = std::chrono::steady_clock::now();
-
             Graph graph(num_vertices, input);
-            for (unsigned i = 0; i < loop_times-1; i++)
-            {
-                Graph graph(num_vertices, input);
-            }
             auto const end_time = std::chrono::steady_clock::now(); 
+
             PageRank(&graph);  
-            PrintBenchmark(start_time, end_time, loop_times);          
+            PrintBenchmark(start_time, end_time, 1);          
         }
         else if(std::strcmp(test_mode, "pagerank") == 0)
         {
