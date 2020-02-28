@@ -113,7 +113,7 @@ void PageRank(Graph *graph)
         {
             pre_pagerank[i] = pagerank[i];
             pagerank[i] = 0.0;
-            std::cout << i+1  << " = "<< pre_pagerank[i] << std::endl;
+            // std::cout << i+1  << " = "<< pre_pagerank[i] << std::endl;
         }
 
         // Distribute the pr_sum of all dangling nodes(no outer edges) to all nodes.
