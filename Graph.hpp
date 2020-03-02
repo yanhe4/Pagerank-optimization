@@ -13,7 +13,7 @@ class Graph
 {
 public:
 	// construct a vector of vectors to represent each edge index and its inward edges
-	std::vector<std::vector<int>> adjEdges;
+	std::vector<std::vector<int> > adjEdges;
 
 	// Graph Constructor
 	Graph(unsigned Num, std::vector<Edge> &input): vertex_num(Num), edges(input)

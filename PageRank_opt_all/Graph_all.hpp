@@ -14,7 +14,7 @@ class Graph
 {
 public:
 	// construct a vector of vectors to represent each edge index and its outhoing edges
-	std::vector<std::vector<int>> adjEdges;
+	std::vector<std::vector<int> > adjEdges;
 
 	// Graph Constructor
 	Graph(unsigned Num, Edge &input): vertex_num(Num), edges(input)

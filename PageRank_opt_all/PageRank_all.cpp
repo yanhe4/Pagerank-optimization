@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream> // std::ifstream
 #include <sstream> // std::stringstream
-#include <string> // std::string
+#include <string> // std::string, std::stoi
+#include <limits.h> // UINT_MAX
+#include <cstring> // std::strcmp
 #include <cmath>
 #include <vector>
-#include <chrono> 
+#include <chrono>
 #include <ctime>
 #include "Graph_all.hpp"
 
