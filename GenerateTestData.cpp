@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>  // std::ofstream
 #include <random> 	// std::rand, std::srand, std::default_random_engine
+#include <algorithm> // std::generate
 
 // from benchmarking.cpp in class
 template < typename RandomGenerator >
