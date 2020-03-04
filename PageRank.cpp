@@ -10,6 +10,8 @@
 #include <ctime>
 #include "Graph.hpp"
 
+using namespace CSC586C::original_graph;
+
 extern const double damping_factor = 0.85;
 extern const unsigned max_iterations = 100;
 extern const double tolerance = 1e-8;
@@ -160,7 +162,7 @@ int main(int argc, char *argv[])
 {
     if(argc == 3)
     {
-        unsigned loop_times = 10;
+        unsigned loop_times = 1;
         unsigned num_vertices = 0;
         const char* test_mode = argv[2];
 
