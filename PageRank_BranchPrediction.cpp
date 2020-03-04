@@ -10,7 +10,7 @@
 #include <ctime>
 #include "Graph.hpp"
 
-using namespace CSC586C::optimize_algorithm;
+using namespace CSC586C::original_graph;
 
 extern const double damping_factor = 0.85;
 extern const unsigned max_iterations = 100;
@@ -19,9 +19,9 @@ extern const double tolerance = 1e-8;
 // Read Input from file with format:
 // N (#vertex)
 // src_index dest_index ... src_index dest_index (pairs of source and destination links)
-std::vector<ColdEdge> ReadInputFromTextFile(const char* input_file, unsigned& num_vertices)
+std::vector<Edge> ReadInputFromTextFile(const char* input_file, unsigned& num_vertices)
 {
-    std::vector<ColdEdge> input;
+    std::vector<Edge> input;
     std::string input_line, str;
     std::ifstream myfile (input_file);
     if (myfile.is_open())
@@ -55,7 +55,7 @@ std::vector<ColdEdge> ReadInputFromTextFile(const char* input_file, unsigned& nu
                         // Writing out the edges into the graph
                         // Example: std::vector<Edge> input{ Edge{1,0}, Edge{4,2}, Edge{2,5}, Edge{1,3}};
                         if (source == destination) break; 
-                        input.push_back(ColdEdge{source, destination});  
+                        input.push_back(Edge{source, destination});  
                         // std::cout << source << std::endl;
                         // std::cout << destination << std::endl;
                     }
@@ -67,22 +67,22 @@ std::vector<ColdEdge> ReadInputFromTextFile(const char* input_file, unsigned& nu
     return input;
 }
 
-bool ToleranceCheck(const unsigned& num_v, std::vector<HotData>& nodes)
+bool ToleranceCheck(const unsigned& num_v, std::vector<double> pagerank, std::vector<double> pre_pagerank)
 {
     // Sum up the pagerank
     double pr_sum = 0.0;
     for (unsigned i = 0; i < num_v; i++) 
     {
-        pr_sum += nodes[i].pagerank;
+        pr_sum += pagerank[i];
     }
     // Calculate the cur_toleranceor
     pr_sum = 1.0 / pr_sum;
     double cur_tolerance = 0.0;
     for (unsigned i = 0; i < num_v; i++)
     {
-        nodes[i].pagerank *= pr_sum;
+        pagerank[i] *= pr_sum;
         // norm 1
-        cur_tolerance += std::fabs(nodes[i].pagerank - nodes[i].pre_pagerank);
+        cur_tolerance += std::fabs(pagerank[i] - pre_pagerank[i]);
     }
 
     std::cout << "Current toleranceor: " << cur_tolerance << std::endl;
@@ -94,16 +94,18 @@ bool ToleranceCheck(const unsigned& num_v, std::vector<HotData>& nodes)
     return false;
 }
 
-void PageRank(Algorithm_Graph *graph)
+void PageRank(Graph *graph)
 {
     const unsigned num_v = graph->VertexesNum();
     double init_rank = double(1.0 / num_v);
+    std::vector<double> pagerank(num_v);
+    std::vector<double> pre_pagerank(num_v);
     double pr_random = (1.0 - damping_factor) / num_v;
     
     for (unsigned i = 0; i < num_v; i++)
     {
-        graph->nodes[i].pagerank = init_rank;
-        graph->nodes[i].pre_pagerank = 0.0;
+        pagerank[i] = init_rank;
+        pre_pagerank[i] = 0.0;
     }
 
     unsigned iter = 0;
@@ -112,18 +114,17 @@ void PageRank(Algorithm_Graph *graph)
         // Update the pagerank values in every iteration
         for (unsigned i = 0; i < num_v; i++)
         {
-            graph->nodes[i].pre_pagerank = graph->nodes[i].pagerank;
-            graph->nodes[i].pagerank = 0.0;
+            pre_pagerank[i] = pagerank[i];
+            pagerank[i] = 0.0;
+            // std::cout << i+1 << " = "<< pre_pagerank[i] << std::endl;
         }
 
         // Distribute the pr_sum of all dangling nodes(no outer edges) to all nodes.
         double dangling_pr_sum = 0.0;
         for (unsigned i = 0; i < num_v; i++)
         {
-            if(graph->adjEdges[i].size() == 0)
-            {
-                dangling_pr_sum += graph->nodes[i].pre_pagerank;
-            }
+            // Remove branch prediction
+            dangling_pr_sum += pre_pagerank[i] * (graph->OutgoingEdgeCount(i) == 0);
         }
         double pr_dangling = damping_factor * dangling_pr_sum / num_v;
 
@@ -131,19 +132,21 @@ void PageRank(Algorithm_Graph *graph)
         // Update its pagerank value by adding pr_eigenvector from its inward links separately
         for (unsigned i = 0; i < num_v; i++)
         {
-            unsigned outgoing_edges_num = graph->adjEdges[i].size();
-            double pr_eigenvector = damping_factor * graph->nodes[i].pre_pagerank / outgoing_edges_num;
-            for (unsigned edge_index = 0; edge_index < outgoing_edges_num; edge_index++)
+            unsigned inward_edges_num = graph->InwardEdgeCount(i);
+            // std::cout << inward_edges_num << std::endl;
+            for (unsigned edge_num = 0; edge_num < inward_edges_num; edge_num++)
             {
-                unsigned update_edge = graph->adjEdges[i].at(edge_index);
-                graph->nodes[update_edge].pagerank += pr_eigenvector;
+                unsigned inward_edge_index = graph->adjEdges[i].at(edge_num);
+                // std::cout << inward_edge_index << std::endl;
+                double pr_eigenvector = damping_factor * pre_pagerank[inward_edge_index] / graph->OutgoingEdgeCount(inward_edge_index);
+                pagerank[i] += pr_eigenvector;
             }
-            graph->nodes[i].pagerank += pr_random + pr_dangling;
+            pagerank[i] += pr_random + pr_dangling;
         }
         std::cout << "Iteration time: " << iter << std::endl;
 
         // finish when cur_toleranceor is smaller than tolerance we set
-        if(ToleranceCheck(num_v, graph->nodes)) break;
+        if(ToleranceCheck(num_v,pagerank,pre_pagerank)) break;
     }
 }
 
@@ -161,7 +164,7 @@ int main(int argc, char *argv[])
         unsigned num_vertices = 0;
         const char* test_mode = argv[2];
 
-        std::vector<ColdEdge> input = ReadInputFromTextFile(argv[1], num_vertices);
+        std::vector<Edge> input = ReadInputFromTextFile(argv[1], num_vertices);
 
         if(std::strcmp(test_mode, "total") == 0)
         {
@@ -169,7 +172,7 @@ int main(int argc, char *argv[])
 
             for (int i = 0; i < loop_times; i++)
             {
-                Algorithm_Graph graph(num_vertices, input);
+                Graph graph(num_vertices, input);
 
                 PageRank(&graph);
             }  
@@ -179,7 +182,7 @@ int main(int argc, char *argv[])
         else if(std::strcmp(test_mode, "graph") == 0 )
         {
             auto const start_time = std::chrono::steady_clock::now();
-            Algorithm_Graph graph(num_vertices, input);
+            Graph graph(num_vertices, input);
             auto const end_time = std::chrono::steady_clock::now(); 
 
             PageRank(&graph);  
@@ -187,7 +190,7 @@ int main(int argc, char *argv[])
         }
         else if(std::strcmp(test_mode, "pagerank") == 0)
         {
-            Algorithm_Graph graph(num_vertices, input);
+            Graph graph(num_vertices, input);
             auto const start_time = std::chrono::steady_clock::now();
             for (unsigned i = 0; i < loop_times; i++)
             {

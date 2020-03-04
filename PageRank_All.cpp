@@ -120,10 +120,8 @@ void PageRank(Algorithm_Graph *graph)
         double dangling_pr_sum = 0.0;
         for (unsigned i = 0; i < num_v; i++)
         {
-            if(graph->adjEdges[i].size() == 0)
-            {
-                dangling_pr_sum += graph->nodes[i].pre_pagerank;
-            }
+           // Remove branch prediction
+            dangling_pr_sum += graph->nodes[i].pre_pagerank * (graph->adjEdges[i].size() == 0);
         }
         double pr_dangling = damping_factor * dangling_pr_sum / num_v;
 
