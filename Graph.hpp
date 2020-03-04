@@ -30,7 +30,6 @@ public:
 			outgoing_edges_num[edge.src]++;
 		}
 	}
-
 	unsigned InwardEdgeCount(unsigned i) { return adjEdges[i].size();}
 	unsigned OutgoingEdgeCount(unsigned i) { return outgoing_edges_num[i]; }
 	unsigned VertexesNum() {return vertex_num;}
@@ -91,5 +90,48 @@ private:
 };
 }
 
+namespace optimize_algorithm {
+// data structure to store cold data: edges (pairs of src and dest)
+struct ColdEdge 
+{
+	unsigned int src;
+	unsigned int dest;
+};
+
+// data structure to store hot data: number of outgoing links each node and its pagerank values 
+struct HotData
+{
+	double pagerank;
+	double pre_pagerank;
+};
+
+// class to represent a graph object
+class Algorithm_Graph
+{
+public:
+	// construct a vector of vectors to represent each edge index and its inward edges (hot data)
+	std::vector<std::vector<int> > adjEdges;
+	// construct a vector to store hot data structure
+	std::vector<HotData> nodes;
+
+	// Graph Constructor
+	Algorithm_Graph(unsigned Num, std::vector<optimize_algorithm::ColdEdge> &input): vertex_num(Num), edges(input)
+	{
+		adjEdges.resize(Num);
+		nodes.resize(Num);
+		// add edges to the directed graph
+		for (auto &edge: edges)
+		{
+			adjEdges[edge.src].push_back(edge.dest);
+		}
+	}
+	unsigned VertexesNum() {return vertex_num;}
+
+private:
+	unsigned int vertex_num;	
+	// construct a vector to store cold data structure
+	std::vector<optimize_algorithm::ColdEdge> const &edges;
+};
+}
 
 }
